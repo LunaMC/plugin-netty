@@ -1,9 +1,9 @@
-# Luna Netty Plugin
+# Luna Netty Plugin [![Build Status](https://travis-ci.org/LunaMC/plugin-netty.svg?branch=master)](https://travis-ci.org/LunaMC/plugin-netty)
 
-The `luna-netty-plugin` is the main server implementation on top of [Netty](http://netty.io). The following services
-will be provided by this plugin:
+The `luna-netty` plugin is the reference server implementation of LunaMC on top of [Netty](http://netty.io). The
+following services will be provided by this plugin:
 
- * `io.lunamc.server.Server` using `luna-protocol`
+ * `io.lunamc.server.Server` using [luna-protocol](https://github.com/LunaMC/protocol)
  * `io.lunamc.server.ServerConfiguration` using a xml-based backend
  * `io.lunamc.login.session.SessionClient` using
    [async-http-client](https://github.com/AsyncHttpClient/async-http-client)

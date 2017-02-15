@@ -27,6 +27,7 @@ import io.lunamc.common.network.AuthorizedConnection;
 import io.lunamc.common.network.DecidedConnection;
 import io.lunamc.plugins.netty.network.NettyAuthorizedConnection;
 import io.lunamc.plugins.netty.protocol.ProtocolException;
+import io.lunamc.plugins.netty.utils.NettyUtils;
 import io.lunamc.protocol.ChannelHandlerContextUtils;
 import io.lunamc.protocol.ProtocolUtils;
 import io.lunamc.protocol.handler.LengthLimitedFrameDecoder;
@@ -201,6 +202,8 @@ public class ProtocolLoginHandler extends PacketInboundHandlerAdapter {
     private void finalizeLogin(ChannelHandlerContext ctx, Profile profile) {
         VirtualHost.Compression compression = setupCompression(ctx, profile);
 
+        NettyUtils.debugChannelPipeline(ctx);
+
         ByteBuf output = ctx.alloc().buffer();
         // Packet id for login success (0x02)
         ProtocolUtils.writeVarInt(output, 0x02);
@@ -209,7 +212,7 @@ public class ProtocolLoginHandler extends PacketInboundHandlerAdapter {
         // Write username
         ProtocolUtils.writeString(output, profile.getName());
         // Bye bye(tes)
-        ctx.writeAndFlush(output, ctx.voidPromise());
+        ctx.channel().writeAndFlush(output, ctx.voidPromise());
 
         AuthorizedConnection authorizedConnection = new NettyAuthorizedConnection(
                 ctx.channel(),
@@ -234,7 +237,7 @@ public class ProtocolLoginHandler extends PacketInboundHandlerAdapter {
                 int level = compression.getCompressionLevel();
                 if (level != Deflater.DEFAULT_COMPRESSION && (level < Deflater.NO_COMPRESSION || level > Deflater.BEST_COMPRESSION)) {
                     LOGGER.warn(MARKER_COMPRESSION, "Invalid compression level {} on connection {} {}", level, ChannelHandlerContextUtils.client(ctx), profile);
-                } else if (level > Deflater.NO_COMPRESSION) {
+                } else if (level == Deflater.DEFAULT_COMPRESSION || level > Deflater.NO_COMPRESSION) {
                     LOGGER.debug(MARKER_COMPRESSION, "Compress packets for connection {} {} with threshold >= {} bytes and compression level {}", ChannelHandlerContextUtils.client(ctx), profile, threshold, level);
 
                     ByteBuf output = ctx.alloc().buffer();
@@ -242,10 +245,12 @@ public class ProtocolLoginHandler extends PacketInboundHandlerAdapter {
                     ProtocolUtils.writeVarInt(output, 0x03);
                     // Write threshold as VarInt
                     ProtocolUtils.writeVarInt(output, threshold);
+                    // Send packet to client
+                    ctx.channel().writeAndFlush(output, ctx.voidPromise());
 
                     ctx.channel().pipeline()
-                            .addBefore(PacketLengthPrepender.HANDLER_NAME, PacketCompressor.HANDLER_NAME, new PacketCompressor(threshold, level))
-                            .addBefore(PacketLengthPrepender.HANDLER_NAME, PacketDecompressor.HANDLER_NAME, new PacketDecompressor());
+                            .addAfter(PacketLengthPrepender.HANDLER_NAME, PacketDecompressor.HANDLER_NAME, new PacketDecompressor())
+                            .addAfter(PacketLengthPrepender.HANDLER_NAME, PacketCompressor.HANDLER_NAME, new PacketCompressor(threshold, level));
 
                     return compression;
                 }

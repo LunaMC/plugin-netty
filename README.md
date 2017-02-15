@@ -29,7 +29,7 @@ The plugin requires the following service implementations:
             <permission impl="java.lang.RuntimePermission" name="accessClassInPackage.sun.misc" action="" />
             <permission impl="java.lang.RuntimePermission" name="getClassLoader" action="" />
             <permission impl="java.lang.reflect.ReflectPermission" name="suppressAccessChecks" action="" />
-            <permission impl="java.net.SocketPermission" name="*" action="listen,accept,resolve" />
+            <permission impl="java.net.SocketPermission" name="*" action="listen,accept,connect,resolve" />
             <permission impl="java.io.FilePermission" name="${java.io.tmpdir}" action="read,write,delete" />
         </permissions>
     </security>

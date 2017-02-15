@@ -130,9 +130,11 @@
                             <filters>
                                 <filter>
                                     <artifact>org.asynchttpclient:async-http-client</artifact>
-                                    <excludes>
-                                        <exclude>io/netty/**</exclude>
-                                    </excludes>
+                                    <includes>
+                                        <include>org/asynchttpclient/**</include>
+                                        <include>io/netty/handler/ssl/NettySslPackageAccessor.*</include>
+                                        <include>*</include>
+                                    </includes>
                                 </filter>
                                 <filter>
                                     <artifact>org.asynchttpclient:netty-codec-dns</artifact>

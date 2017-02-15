@@ -16,8 +16,10 @@
 
 package io.lunamc.plugins.netty.utils;
 
+import io.lunamc.protocol.ChannelHandlerContextUtils;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
@@ -29,8 +31,14 @@ import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 public class NettyUtils {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyUtils.class);
 
     private NettyUtils() {
         throw new UnsupportedOperationException(getClass().getSimpleName() + " is a utility class and should not be constructed");
@@ -45,6 +53,20 @@ public class NettyUtils {
     public static void writeFlushAndClose(ChannelHandlerContext ctx, Object msg) {
         ChannelFuture future = ctx.writeAndFlush(msg);
         future.addListener(ChannelFutureListener.CLOSE);
+    }
+
+    public static void debugChannelPipeline(ChannelHandlerContext ctx) {
+        StringBuilder sb = new StringBuilder("Channel pipeline for ")
+                .append(ChannelHandlerContextUtils.client(ctx))
+                .append(':');
+        for (Map.Entry<String, ChannelHandler> handlerEntry : ctx.pipeline()) {
+            sb.append(System.lineSeparator())
+                    .append('\t')
+                    .append(handlerEntry.getKey())
+                    .append(": ")
+                    .append(handlerEntry.getValue());
+        }
+        LOGGER.debug(sb.toString());
     }
 
     public static String getEpollUnavailabilityReason() {

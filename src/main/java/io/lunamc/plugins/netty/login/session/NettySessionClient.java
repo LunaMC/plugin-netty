@@ -23,7 +23,6 @@ import io.lunamc.common.login.session.Profile;
 import io.lunamc.common.login.session.SessionClient;
 import io.lunamc.plugins.netty.netty.EventLoopGroupHolder;
 import io.lunamc.plugins.netty.utils.HexUtils;
-import io.lunamc.plugins.netty.utils.NettyUtils;
 import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;

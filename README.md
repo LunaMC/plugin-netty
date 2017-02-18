@@ -24,6 +24,7 @@ The plugin requires the following service implementations:
     <security>
         <permissions>
             <permission impl="java.util.PropertyPermission" name="*" action="read" />
+            <permission impl="java.util.PropertyPermission" name="sun.nio.*" action="read,write" />
             <permission impl="java.lang.RuntimePermission" name="modifyThread" action="" />
             <permission impl="java.lang.RuntimePermission" name="accessDeclaredMembers" action="" />
             <permission impl="java.lang.RuntimePermission" name="accessClassInPackage.sun.misc" action="" />
@@ -31,6 +32,7 @@ The plugin requires the following service implementations:
             <permission impl="java.lang.reflect.ReflectPermission" name="suppressAccessChecks" action="" />
             <permission impl="java.net.SocketPermission" name="*" action="listen,accept,connect,resolve" />
             <permission impl="java.io.FilePermission" name="${java.io.tmpdir}" action="read,write,delete" />
+            <permission impl="java.io.FilePermission" name="\proc\sys\net\core\somaxconn" action="read" />
         </permissions>
     </security>
 </plugin>

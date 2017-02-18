@@ -30,11 +30,26 @@ import io.lunamc.protocol.handler.LengthLimitedFrameDecoder;
 import io.lunamc.protocol.handler.PacketLengthPrepender;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 import java.util.Objects;
 
 public class LunaChannelInitializer extends ChannelInitializer<SocketChannel> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LunaChannelInitializer.class);
+    private static final boolean DEBUG = Boolean.getBoolean("io.lunamc.plugins.netty.debugChannels");
+    private static final String HANDLER_READ_TIMEOUT = "read-timeout";
+    private static final String HANDLER_DEBUG = "debug";
+
+    static {
+        if (DEBUG)
+            LOGGER.info("Channel debugging is enabled. This may decrease the performance.");
+    }
 
     private final ServiceRegistration<ServerConfiguration> config;
     private final LegacyPingHandler legacyPingHandler;
@@ -57,11 +72,19 @@ public class LunaChannelInitializer extends ChannelInitializer<SocketChannel> {
         ServerConfiguration config = this.config.requireInstance();
 
         ch.pipeline()
-                .addLast(new ReadTimeoutHandler(config.getTimeout()))
+                .addLast(HANDLER_READ_TIMEOUT, new ReadTimeoutHandler(config.getTimeout()))
                 .addLast(LegacyPingHandler.HANDLER_NAME, legacyPingHandler)
                 .addLast(LengthLimitedFrameDecoder.HANDLER_NAME, new LengthLimitedFrameDecoder())
                 .addLast(PacketLengthPrepender.HANDLER_NAME, PacketLengthPrepender.INSTANCE)
                 .addLast(OutboundExceptionHandler.HANDLER_NAME, OutboundExceptionHandler.INSTANCE)
                 .addLast(ProtocolHandshakeHandler.HANDLER_NAME, handshakeHandler);
+
+        if (DEBUG) {
+            LoggingHandler loggingHandler = new LoggingHandler(LogLevel.DEBUG);
+            ch.pipeline().addAfter(HANDLER_READ_TIMEOUT, HANDLER_DEBUG, loggingHandler);
+            Logger logger = LoggerFactory.getLogger(loggingHandler.getClass());
+            if (!logger.isDebugEnabled())
+                LOGGER.warn("Logger {} must able to log {} to show channel debug messages", logger.getName(), Level.DEBUG);
+        }
     }
 }

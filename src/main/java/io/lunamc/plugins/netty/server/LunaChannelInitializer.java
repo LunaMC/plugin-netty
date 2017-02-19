@@ -26,12 +26,12 @@ import io.lunamc.plugins.netty.handler.PlayHandlerFactory;
 import io.lunamc.plugins.netty.handler.LegacyPingHandler;
 import io.lunamc.plugins.netty.handler.OutboundExceptionHandler;
 import io.lunamc.plugins.netty.handler.ProtocolHandshakeHandler;
+import io.lunamc.plugins.netty.utils.LimitedLoggingHandler;
 import io.lunamc.protocol.handler.LengthLimitedFrameDecoder;
 import io.lunamc.protocol.handler.PacketLengthPrepender;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +80,7 @@ public class LunaChannelInitializer extends ChannelInitializer<SocketChannel> {
                 .addLast(ProtocolHandshakeHandler.HANDLER_NAME, handshakeHandler);
 
         if (DEBUG) {
-            LoggingHandler loggingHandler = new LoggingHandler(LogLevel.DEBUG);
+            LimitedLoggingHandler loggingHandler = new LimitedLoggingHandler(LogLevel.DEBUG);
             ch.pipeline().addAfter(HANDLER_READ_TIMEOUT, HANDLER_DEBUG, loggingHandler);
             Logger logger = LoggerFactory.getLogger(loggingHandler.getClass());
             if (!logger.isDebugEnabled())

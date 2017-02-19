@@ -40,6 +40,7 @@ import io.lunamc.protocol.handler.compression.PacketDecompressor;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -226,7 +227,9 @@ public class ProtocolLoginHandler extends PacketInboundHandlerAdapter {
         ChannelHandler playHandler = playHandlerFactory.requireInstance().createHandler(authorizedConnection);
         if (playHandler == null)
             throw new IllegalStateException("No play handler available");
-        ctx.channel().pipeline().replace(HANDLER_NAME, PlayHandlerFactory.HANDLER_NAME, playHandler);
+        ChannelPipeline pipeline = ctx.channel().pipeline();
+        pipeline.replace(HANDLER_NAME, PlayHandlerFactory.HANDLER_NAME, playHandler);
+        pipeline.addAfter(PlayHandlerFactory.HANDLER_NAME, KeepAliveHandler.HANDLER_NAME, new KeepAliveHandler());
     }
 
     private VirtualHost.Compression setupCompression(ChannelHandlerContext ctx, Profile profile) {

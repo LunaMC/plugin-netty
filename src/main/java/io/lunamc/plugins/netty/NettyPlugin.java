@@ -28,7 +28,6 @@ import io.lunamc.common.login.encryption.EncryptionFactory;
 import io.lunamc.common.login.session.SessionClient;
 import io.lunamc.common.server.Server;
 import io.lunamc.plugins.netty.config.ServerConfiguration;
-import io.lunamc.plugins.netty.handler.PlayHandlerFactory;
 import io.lunamc.plugins.netty.netty.DefaultGlobalEventExecutorController;
 import io.lunamc.plugins.netty.netty.EventLoopGroupHolder;
 import io.lunamc.plugins.netty.config.DefaultServerConfiguration;
@@ -75,7 +74,6 @@ public class NettyPlugin extends PluginAdapter {
         ));
         serviceRegistry.setService(Server.class, new NettyServer(
                 config,
-                serviceRegistry.getService(PlayHandlerFactory.class),
                 eventLoopGroupHolder,
                 serviceRegistry.getService(EncryptionFactory.class),
                 jsonMapper,

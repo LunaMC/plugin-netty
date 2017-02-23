@@ -40,18 +40,15 @@ public class ProtocolHandshakeHandler extends PacketInboundHandlerAdapter {
 
     public static final String HANDLER_NAME = "handshake-handler";
 
-    private final ServiceRegistration<PlayHandlerFactory> playHandlerFactory;
     private final ServiceRegistration<EncryptionFactory> encryptionFactory;
     private final ServiceRegistration<JsonMapper> jsonMapper;
     private final ServiceRegistration<VirtualHostManager> virtualHostManager;
     private final ServiceRegistration<SessionClient> sessionClient;
 
-    public ProtocolHandshakeHandler(ServiceRegistration<PlayHandlerFactory> playHandlerFactory,
-                                    ServiceRegistration<EncryptionFactory> encryptionFactory,
+    public ProtocolHandshakeHandler(ServiceRegistration<EncryptionFactory> encryptionFactory,
                                     ServiceRegistration<JsonMapper> jsonMapper,
                                     ServiceRegistration<VirtualHostManager> virtualHostManager,
                                     ServiceRegistration<SessionClient> sessionClient) {
-        this.playHandlerFactory = Objects.requireNonNull(playHandlerFactory, "playHandlerFactory must not be null");
         this.encryptionFactory = Objects.requireNonNull(encryptionFactory, "encryptionFactory must not be null");
         this.jsonMapper = Objects.requireNonNull(jsonMapper, "jsonMapper must not be null");
         this.virtualHostManager = Objects.requireNonNull(virtualHostManager, "virtualHostManager must not be null");
@@ -105,7 +102,7 @@ public class ProtocolHandshakeHandler extends PacketInboundHandlerAdapter {
     }
 
     protected void setupLogin(ChannelHandlerContext ctx, DecidedConnection connection) {
-        replaceHandler(ctx, ProtocolLoginHandler.HANDLER_NAME, new ProtocolLoginHandler(playHandlerFactory, encryptionFactory, sessionClient, connection));
+        replaceHandler(ctx, ProtocolLoginHandler.HANDLER_NAME, new ProtocolLoginHandler(encryptionFactory, sessionClient, connection));
     }
 
     private static void replaceHandler(ChannelHandlerContext ctx, String newName, ChannelHandler newHandler) {

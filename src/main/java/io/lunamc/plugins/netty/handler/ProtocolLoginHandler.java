@@ -38,7 +38,6 @@ import io.lunamc.protocol.handler.cipher.CipherEncoder;
 import io.lunamc.protocol.handler.compression.PacketCompressor;
 import io.lunamc.protocol.handler.compression.PacketDecompressor;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import org.slf4j.Logger;
@@ -81,7 +80,6 @@ public class ProtocolLoginHandler extends PacketInboundHandlerAdapter {
                 .toString();
     }
 
-    private final ServiceRegistration<PlayHandlerFactory> playHandlerFactory;
     private final ServiceRegistration<EncryptionFactory> encryptionFactory;
     private final ServiceRegistration<SessionClient> sessionClient;
     private final DecidedConnection connection;
@@ -91,8 +89,7 @@ public class ProtocolLoginHandler extends PacketInboundHandlerAdapter {
     protected String loginData;
     protected SecretKey secret;
 
-    public ProtocolLoginHandler(ServiceRegistration<PlayHandlerFactory> playHandlerFactory,
-                                ServiceRegistration<EncryptionFactory> encryptionFactory,
+    public ProtocolLoginHandler(ServiceRegistration<EncryptionFactory> encryptionFactory,
                                 ServiceRegistration<SessionClient> sessionClient,
                                 DecidedConnection connection) {
         if (isSharable())
@@ -100,7 +97,6 @@ public class ProtocolLoginHandler extends PacketInboundHandlerAdapter {
 
         this.encryptionFactory = Objects.requireNonNull(encryptionFactory, "encryptionFactory must not be null");
         this.sessionClient = Objects.requireNonNull(sessionClient, "sessionClient must not be null");
-        this.playHandlerFactory = Objects.requireNonNull(playHandlerFactory, "playHandlerFactory must not be null");
         this.connection = Objects.requireNonNull(connection, "connection must not be null");
     }
 
@@ -224,12 +220,9 @@ public class ProtocolLoginHandler extends PacketInboundHandlerAdapter {
                 profile,
                 compression
         );
-        ChannelHandler playHandler = playHandlerFactory.requireInstance().createHandler(authorizedConnection);
-        if (playHandler == null)
-            throw new IllegalStateException("No play handler available");
         ChannelPipeline pipeline = ctx.channel().pipeline();
-        pipeline.replace(HANDLER_NAME, PlayHandlerFactory.HANDLER_NAME, playHandler);
-        pipeline.addAfter(PlayHandlerFactory.HANDLER_NAME, KeepAliveHandler.HANDLER_NAME, new KeepAliveHandler());
+        authorizedConnection.getVirtualHost().getPlayConnectionInitializer(authorizedConnection).initialize(authorizedConnection);
+        pipeline.addLast(KeepAliveHandler.HANDLER_NAME, new KeepAliveHandler());
     }
 
     private VirtualHost.Compression setupCompression(ChannelHandlerContext ctx, Profile profile) {

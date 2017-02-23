@@ -22,7 +22,6 @@ import io.lunamc.common.json.JsonMapper;
 import io.lunamc.common.login.encryption.EncryptionFactory;
 import io.lunamc.common.login.session.SessionClient;
 import io.lunamc.plugins.netty.config.ServerConfiguration;
-import io.lunamc.plugins.netty.handler.PlayHandlerFactory;
 import io.lunamc.plugins.netty.handler.LegacyPingHandler;
 import io.lunamc.plugins.netty.handler.OutboundExceptionHandler;
 import io.lunamc.plugins.netty.handler.ProtocolHandshakeHandler;
@@ -55,8 +54,7 @@ public class LunaChannelInitializer extends ChannelInitializer<SocketChannel> {
     private final LegacyPingHandler legacyPingHandler;
     private final ProtocolHandshakeHandler handshakeHandler;
 
-    public LunaChannelInitializer(ServiceRegistration<PlayHandlerFactory> playHandlerFactory,
-                                  ServiceRegistration<ServerConfiguration> config,
+    public LunaChannelInitializer(ServiceRegistration<ServerConfiguration> config,
                                   ServiceRegistration<EncryptionFactory> encryptionFactory,
                                   ServiceRegistration<JsonMapper> jsonMapper,
                                   ServiceRegistration<VirtualHostManager> virtualHostManager,
@@ -64,7 +62,7 @@ public class LunaChannelInitializer extends ChannelInitializer<SocketChannel> {
         this.config = Objects.requireNonNull(config, "config must not be null");
 
         legacyPingHandler = new LegacyPingHandler(virtualHostManager);
-        handshakeHandler = new ProtocolHandshakeHandler(playHandlerFactory, encryptionFactory, jsonMapper, virtualHostManager, sessionClient);
+        handshakeHandler = new ProtocolHandshakeHandler(encryptionFactory, jsonMapper, virtualHostManager, sessionClient);
     }
 
     @Override

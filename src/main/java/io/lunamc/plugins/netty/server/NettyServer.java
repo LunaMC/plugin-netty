@@ -25,7 +25,6 @@ import io.lunamc.common.login.encryption.EncryptionFactory;
 import io.lunamc.common.login.session.SessionClient;
 import io.lunamc.common.server.Server;
 import io.lunamc.plugins.netty.config.ServerConfiguration;
-import io.lunamc.plugins.netty.handler.PlayHandlerFactory;
 import io.lunamc.plugins.netty.netty.EventLoopGroupHolder;
 import io.lunamc.plugins.netty.utils.NettyUtils;
 import io.netty.bootstrap.ServerBootstrap;
@@ -46,7 +45,6 @@ public class NettyServer implements Server, Startable, Shutdownable {
     private static final Marker MARKER_SERVER = MarkerFactory.getMarker("SERVER");
 
     private final ServiceRegistration<ServerConfiguration> config;
-    private final ServiceRegistration<PlayHandlerFactory> playHandlerFactory;
     private final ServiceRegistration<EventLoopGroupHolder> eventLoopGroupHolder;
     private final ServiceRegistration<EncryptionFactory> encryptionFactory;
     private final ServiceRegistration<JsonMapper> jsonMapper;
@@ -56,14 +54,12 @@ public class NettyServer implements Server, Startable, Shutdownable {
     private boolean started;
 
     public NettyServer(ServiceRegistration<ServerConfiguration> config,
-                       ServiceRegistration<PlayHandlerFactory> playHandlerFactory,
                        ServiceRegistration<EventLoopGroupHolder> eventLoopGroupHolder,
                        ServiceRegistration<EncryptionFactory> encryptionFactory,
                        ServiceRegistration<JsonMapper> jsonMapper,
                        ServiceRegistration<VirtualHostManager> virtualHostManager,
                        ServiceRegistration<SessionClient> sessionClient) {
         this.config = Objects.requireNonNull(config, "config must not be null");
-        this.playHandlerFactory = Objects.requireNonNull(playHandlerFactory, "playHandlerFactory must not be null");
         this.eventLoopGroupHolder = Objects.requireNonNull(eventLoopGroupHolder, "eventLoopGroupHolder must not be null");
         this.encryptionFactory = Objects.requireNonNull(encryptionFactory, "encryptionFactory must not be null");
         this.jsonMapper = Objects.requireNonNull(jsonMapper, "jsonMapper must not be null");
@@ -91,7 +87,6 @@ public class NettyServer implements Server, Startable, Shutdownable {
                     .channel(NettyUtils.getServerSocketChannelClass())
                     .option(ChannelOption.TCP_NODELAY, true)
                     .childHandler(new LunaChannelInitializer(
-                            playHandlerFactory,
                             this.config,
                             encryptionFactory,
                             jsonMapper,
